@@ -13,7 +13,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 
-def combine_pdfs(merger: PdfMerger, path: str):
+def combine_pdfs(merger: PdfMerger, path: str) -> None:
     """
     Combines pdf files given a merger object and a path
 
@@ -26,6 +26,7 @@ def combine_pdfs(merger: PdfMerger, path: str):
     file_name = path + course + path.split('/')[-2] + ".pdf"
     merger.write(file_name)
     merger.close()
+
     logging.info(f"Generated combined file: {file_name}.")
 
 
@@ -49,6 +50,7 @@ def _process_pdf(
     Returns:
         PdfMerger: Object with list of pdf that can be combined.
     """
+
     with open(f"{base_path}{fname}", 'wb') as pdf:
         pdf.write(requests.get(base_url + href.get('href')).content)
     with open(f"{base_path}{fname}", 'rb') as pdf: 
