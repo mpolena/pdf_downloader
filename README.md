@@ -2,12 +2,13 @@
 
 ### About
 This project collects pdf lectures and recitations from MIT 6.006 Introduction to Algorithms
-course website and combines those lectures and recitations in chronological order into a single file.
+course website and combines those lectures and recitations in chronological order into a single file
+for each section.
 
 ### Goals
-- Created to demonstrate 
+- Demonstrate and implement:
     - web scraping
     - pdf processing
     - testing with pytest 
     - SOLID principles.
-- Learn how to create github workflows that validate codebase during merge requests.
+- Create github workflows that validate codebase during merge requests.
