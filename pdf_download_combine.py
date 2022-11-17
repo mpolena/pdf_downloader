@@ -1,5 +1,6 @@
 import os
 import requests
+
 # import argparse
 import logging
 
@@ -23,48 +24,61 @@ def combine_pdfs(merger: PdfMerger, path: str) -> None:
     """
 
     course = "MIT_6.006_"
-    file_name = path + course + path.split('/')[-2] + ".pdf"
+    file_name = path + course + path.split("/")[-2] + ".pdf"
     merger.write(file_name)
     merger.close()
 
     logging.info(f"Generated combined file: {file_name}.")
 
 
-def _process_pdf(
-        merger: PdfMerger,
-        base_path: str,
-        fname: str,
-        base_url: str,
-        href: dict,
-    ) -> PdfMerger:
-    """
-    Creates PdfMerger object used for merging pdf files
+def _prepare_merger(merger: PdfMerger, base_path: str, fname: str) -> PdfMerger:
+    """Prepares PdfMerger object for processing.
 
     Args:
-        merger (PdfMerger): Merger object
+        merger (PdfMerger): pdf merger object
+        base_path (str): file path
+        fname (str): name of the file
+
+    Returns:
+        PdfMerger: pdf merger object
+    """
+
+    with open(f"{base_path}{fname}", "rb") as pdf:
+        merger.append(pdf)
+
+    return merger
+
+
+def _save_pdf(
+    base_path: str,
+    fname: str,
+    base_url: str,
+    href: dict,
+) -> None:
+    """
+    Saves pdf files to appropriate directory.
+
+    Args:
         base_path (str): path
         fname (str): name of file
         base_url (str): url where file contents can be obrained
         href (dict): dictionary of pdf files
 
     Returns:
-        PdfMerger: Object with list of pdf that can be combined.
+        None
     """
-
-    with open(f"{base_path}{fname}", 'wb') as pdf:
-        pdf.write(requests.get(base_url + href.get('href')).content)
-    with open(f"{base_path}{fname}", 'rb') as pdf: 
-        merger.append(pdf)
-    return merger
+    with open(f"{base_path}{fname}", "wb") as pdf:
+        pdf.write(requests.get(base_url + href.get("href")).content)
+    return
 
 
 def download_pdfs(
-        links: list, 
-        base_url: str,
-        base_path: str,
-        lecture_merger: PdfMerger,
-        recitations_merger: PdfMerger,
-    ) -> List[Tuple[Any, str]]:
+    links: list,
+    base_url: str,
+    base_path: str,
+    lecture_merger: PdfMerger,
+    recitations_merger: PdfMerger,
+) -> List[Tuple[Any, str]]:
     """
     Downloads set of lecture and recitation pdfs from MIT_6.006 course
 
@@ -82,41 +96,33 @@ def download_pdfs(
     rec_base_path = f"{base_path}recitations/"
     lec_base_path = f"{base_path}lectures/"
 
-    file_name_dict = {
-        lec_base_path: "lec",
-        rec_base_path: "r"
-    }
-    
     for link in links:
         response = requests.get(link)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        a_tags = soup.find_all('a')
+        soup = BeautifulSoup(response.text, "html.parser")
+        a_tags = soup.find_all("a")
         href_dict = {}
         for href in a_tags:
-            pdf_url = base_url + href.get('href')
-            if '.pdf' in pdf_url and pdf_url not in href_dict:
+            pdf_url = base_url + href.get("href")
+            if ".pdf" in pdf_url and pdf_url not in href_dict:
                 # Populate dict to prevent downloading more than once.
-                href_dict[pdf_url] = 1
-                fname = href.get('href').split('/')[-1].split('_')[-1]
+                fname = href.get("href").split("/")[-1].split("_")[-1]
+                href_dict[pdf_url] = fname
                 logging.info(f"Downloading file: {fname}")
-
                 # Process lecture.
-                if file_name_dict[lec_base_path] in fname:
-                    lecture_merger = _process_pdf(
+                if "lec" in fname:
+                    _save_pdf(lec_base_path, fname, base_url, href)
+                    lecture_merger = _prepare_merger(
                         lecture_merger,
                         lec_base_path,
                         fname,
-                        base_url,
-                        href,
                     )
                 # Process recitation.
-                elif file_name_dict[rec_base_path] in fname:
-                    recitations_merger = _process_pdf(
+                elif "r" in fname:
+                    _save_pdf(rec_base_path, fname, base_url, href)
+                    recitations_merger = _prepare_merger(
                         recitations_merger,
                         rec_base_path,
                         fname,
-                        base_url,
-                        href,
                     )
     logging.info("All PDF files downloaded")
 
@@ -128,28 +134,28 @@ def main():
     Main Function; program entry-point.
 
     """
-    base_url = os.getenv('base_url')
-    url_ext = os.getenv('url_path')
-    base_path = os.getenv('base_path')
+    base_url = os.getenv("base_url")
+    url_ext = os.getenv("url_path")
+    base_path = os.getenv("base_path")
 
     url = f"{base_url}{url_ext}"
     response = requests.get(url)
 
     # Parse text obtained
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.text, "html.parser")
 
     # Find all hyperlinks present on webpage
-    links = soup.find_all('a')
+    links = soup.find_all("a")
     url_lst = [
-        base_url + link.get('href') for link in links if 'resources' in link.get('href')
+        base_url + link.get("href") for link in links if "resources" in link.get("href")
     ]
 
     lecture_merger = PdfMerger()
     recitations_merger = PdfMerger()
 
     merger_and_path_list = download_pdfs(
-        url_lst, 
-        base_url, 
+        url_lst,
+        base_url,
         base_path,
         lecture_merger=lecture_merger,
         recitations_merger=recitations_merger,
