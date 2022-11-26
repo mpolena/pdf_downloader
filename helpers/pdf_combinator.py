@@ -35,8 +35,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process some strings.')
 
-    lec_files = os.listdir(lectures_path)
-    combine_pdfs(lec_files, lectures_path, course)
+    lecture_files = os.listdir(lectures_path)
+    combine_pdfs(lecture_files, lectures_path, course)
 
-    rec_files = os.listdir(recitations_path)
-    combine_pdfs(rec_files, recitations_path, course)
+    recitation_files = os.listdir(recitations_path)
+    combine_pdfs(recitation_files, recitations_path, course)
