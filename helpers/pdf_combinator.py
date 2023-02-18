@@ -7,11 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 ######## UNUSED - Combined in one script
-def combine_pdfs(
-        files_list: list, 
-        path: Path, 
-        course: str
-    ):
+def combine_pdfs(files_list: list, path: Path, course: str):
 
     merger = PdfMerger()
     file_name = course + str(path.parts[-1])
@@ -20,20 +16,20 @@ def combine_pdfs(
             with open(path / file, mode="rb") as pdf:
                 merger.append(pdf)
 
-    file = str(path) +"/"+ file_name + ".pdf"
+    file = str(path) + "/" + file_name + ".pdf"
     merger.write(file)
     merger.close()
-    
+
     print(f"Successfully wrote {file}")
 
 
-if __name__ == '__main__':
-    
-    recitations_path = Path(os.getenv('user_app_recitations'))
-    lectures_path = Path(os.getenv('user_app_lectures'))
+if __name__ == "__main__":
+
+    recitations_path = Path(os.getenv("user_app_recitations"))
+    lectures_path = Path(os.getenv("user_app_lectures"))
     course = "MIT_6.006_"
 
-    parser = argparse.ArgumentParser(description='Process some strings.')
+    parser = argparse.ArgumentParser(description="Process some strings.")
 
     lecture_files = os.listdir(lectures_path)
     combine_pdfs(lecture_files, lectures_path, course)
