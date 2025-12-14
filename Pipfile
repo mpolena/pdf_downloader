@@ -10,6 +10,7 @@ pathlib = "*"
 pytest = "*"
 python-dotenv = "*"
 pypdf2 = "*"
+urllib3 = "==2.6.0"
 
 [dev-packages]
 
